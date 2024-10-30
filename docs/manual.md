@@ -1,4 +1,4 @@
-# Step 1
+# USER MANUAL
 
 - Install Module
 
@@ -170,6 +170,104 @@ export default function MdxLayout({ children }) {
 }
 ```
 
-หลังจากนี้คุณจะสามารถปรับแต่ง Styles ด้วยตัวของคุณเอง
+## Frontmatter
+
+Frontmatter คือการจับคู่คีย์/ค่าแบบ YAML ที่สามารถใช้เพื่อจัดเก็บข้อมูลเกี่ยวกับหน้าได้ โดย `@next/mdx` จะไม่รองรับ `frontmatter` ตามค่าเริ่มต้น แม้ว่าจะมีโซลูชันมากมายสำหรับการเพิ่ม `frontmatter` ลงในเนื้อหา `MDX` ของคุณ เช่น :
+
+- [remark-frontmatter](https://github.com/remarkjs/remark-frontmatter)
+- [remark-mdx-frontmatter](https://github.com/remcohaszing/remark-mdx-frontmatter)
+- [gray-matter](https://github.com/jonschlinkert/gray-matter)
+
+`@next/mdx` ช่วยให้คุณสามารถใช้การส่งออกได้เช่นเดียวกับส่วนประกอบ JavaScript อื่นๆ :
+
+```bash
+  my-project
+  ├── app
+  │   ├── mdx-page
+  │   │   └── page.jsx
+  │   └── blog
+  │       └── page.jsx
+  ├── markdown
+  │   └── welcome.mdx
+  ├── mdx-components.jsx
+  └── package.json
+```
+
+ตอนนี้จะสามารถอ้างอิงข้อมูลเมตาจากภายนอกไฟล์ MDX ได้แล้ว :
+
+- `/app/blog/page.jsx`
+
+```js
+import BlogPost, { metadata } from '@/content/blog-post.mdx'
+ 
+export default function Page() {
+  console.log('metadata: ', metadata)
+  //=> { author: 'John Doe' }
+  return <BlogPost />
+}
+```
+
+กรณีการใช้งานทั่วไปสำหรับสิ่งนี้คือเมื่อคุณต้องการทำซ้ำในคอลเล็กชันของ MDX และแยกข้อมูล
+
+## Remark and Rehype Plugins
+
+- `next.config.mjs`
+
+```js
+import remarkGfm from 'remark-gfm'
+import createMDX from '@next/mdx'
+ 
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // Configure `pageExtensions`` to include MDX files
+  pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
+  // Optionally, add any other Next.js config below
+}
+ 
+const withMDX = createMDX({
+  // Add markdown plugins here, as desired
+  options: {
+    remarkPlugins: [remarkGfm],
+    rehypePlugins: [],
+  },
+})
+ 
+// Wrap MDX and Next.js config with each other
+export default withMDX(nextConfig)
+```
+
+## Remote MDX
+
+```bash
+  my-project
+  ├── app
+  │   ├── mdx-page
+  │   │   └── page.jsx
+  │   ├── blog
+  │   │   └── page.jsx
+  │   └── mdx-page-remote
+  │       └── page.jsx
+  ├── markdown
+  │   └── welcome.mdx
+  ├── mdx-components.jsx
+  └── package.json
+```
+
+- `app/mdx-page-remote/page.js`
+
+```js
+import { MDXRemote } from 'next-mdx-remote/rsc'
+ 
+export default async function RemoteMdxPage() {
+  // MDX text - can be from a local file, database, CMS, fetch, anywhere...
+  const res = await fetch('https://...')
+  const markdown = await res.text()
+  return <MDXRemote source={markdown} />
+}
+```
+
+## สรุป
+
+นี่เป็นเพียงตัวอย่างการใช้งาน modules mdx แสดงผลไฟล์ Markdown หลังจากนี้คุณจะสามารถปรับแต่ง Styles ด้วยตัวของคุณเอง
 
 ขอบคุณที่ติดตาม
